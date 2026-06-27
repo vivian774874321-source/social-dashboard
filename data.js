@@ -28,17 +28,45 @@ const DASHBOARD_DATA = {
 
       /* ================= 账号诊断(雷达) ================= */
       diagnosis: {
-        xhs: {
-          period: "近 7 日 · 真实后台(06-19~06-25)",
-          percentileStale: false,
-          note: "红线=你的数据，半径为「超过同类百分位」，标签为真实值",
-          axes: [
-            { label: "观看数",   value: "5.7万",  percentile: 97 },
-            { label: "涨粉数",   value: "2322",   percentile: 98 },
-            { label: "主页访客", value: "3940",   percentile: 96 },
-            { label: "发布数",   value: "2",      percentile: 91 },
-            { label: "互动数",   value: "4827",   percentile: 97 },
-          ],
+                xhs: {
+          d7: {
+            base: [
+              { label:"总粉丝",       value:"7140", sub:"近7日 +2322" },
+              { label:"7日净增粉丝", value:"2294", sub:"涨粉 2322 · 流失 49" },
+              { label:"7日涨粉",     value:"2322", sub:"环比 +14%" },
+              { label:"7日点赞",     value:"2174", sub:"" },
+              { label:"7日收藏",     value:"2209", sub:"" },
+              { label:"7日评论",     value:"204",  sub:"" },
+            ],
+            growth: { real:true,
+              labels:["06-19", "06-20", "06-21", "06-22", "06-23", "06-24", "06-25"],
+              values:[4784, 4800, 5099, 6035, 6604, 6913, 7063] },
+            followSource: [{"label": "\u89c6\u9891\u63a8\u8350", "pct": 60}, {"label": "\u9996\u9875\u63a8\u8350", "pct": 29}, {"label": "\u5176\u4ed6\u6765\u6e90", "pct": 8}, {"label": "\u4e2a\u4eba\u4e3b\u9875", "pct": 0}, {"label": "\u641c\u7d22", "pct": 0}],
+            portrait: {
+              gender: { male:24, female:76 },
+              age: { items:[{"label": "<18", "pct": 0}, {"label": "18-24", "pct": 8}, {"label": "25-34", "pct": 35}, {"label": "35-44", "pct": 38}, {"label": ">44", "pct": 16}] },
+              city: { items:[{"label": "\u5317\u4eac", "pct": 7}, {"label": "\u4e0a\u6d77", "pct": 6}, {"label": "\u5e7f\u5dde", "pct": 4}, {"label": "\u6df1\u5733", "pct": 3}, {"label": "\u6210\u90fd", "pct": 2}, {"label": "\u5929\u6d25", "pct": 2}, {"label": "\u676d\u5dde", "pct": 2}, {"label": "\u897f\u5b89", "pct": 1}] },
+            },
+          },
+          d30: {
+            base: [
+              { label:"总粉丝",       value:"7140", sub:"获赞 6249" },
+              { label:"30日净增粉丝", value:"6938", sub:"涨粉 6985 · 流失 226" },
+              { label:"30日涨粉",     value:"6985", sub:"7日涨粉 2322" },
+              { label:"30日点赞",     value:"6249", sub:"" },
+              { label:"30日收藏",     value:"4492", sub:"" },
+              { label:"30日评论",     value:"528",  sub:"" },
+            ],
+            growth: { real:true,
+              labels:["05-27", "05-28", "05-29", "05-30", "05-31", "06-01", "06-02", "06-03", "06-04", "06-05", "06-06", "06-07", "06-08", "06-09", "06-10", "06-11", "06-12", "06-13", "06-14", "06-15", "06-16", "06-17", "06-18", "06-19", "06-20", "06-21", "06-22", "06-23", "06-24", "06-25"],
+              values:[127, 129, 133, 136, 138, 140, 143, 144, 148, 150, 158, 168, 172, 172, 1113, 2754, 3586, 4234, 4441, 4572, 4648, 4716, 4769, 4784, 4800, 5099, 6035, 6604, 6913, 7063] },
+            followSource: [{"label": "\u89c6\u9891\u63a8\u8350", "pct": 60}, {"label": "\u9996\u9875\u63a8\u8350", "pct": 29}, {"label": "\u5176\u4ed6\u6765\u6e90", "pct": 8}, {"label": "\u4e2a\u4eba\u4e3b\u9875", "pct": 0}, {"label": "\u641c\u7d22", "pct": 0}],
+            portrait: {
+              gender: { male:24, female:76 },
+              age: { items:[{"label": "<18", "pct": 0}, {"label": "18-24", "pct": 8}, {"label": "25-34", "pct": 35}, {"label": "35-44", "pct": 38}, {"label": ">44", "pct": 16}] },
+              city: { items:[{"label": "\u5317\u4eac", "pct": 7}, {"label": "\u4e0a\u6d77", "pct": 6}, {"label": "\u5e7f\u5dde", "pct": 4}, {"label": "\u6df1\u5733", "pct": 3}, {"label": "\u6210\u90fd", "pct": 2}, {"label": "\u5929\u6d25", "pct": 2}, {"label": "\u676d\u5dde", "pct": 2}, {"label": "\u897f\u5b89", "pct": 1}] },
+            },
+          },
         },
         dy: {
           period: "近 7 日 (06-20~06-26)",

@@ -612,6 +612,49 @@ function emptyPlatform(pf, txt){
 /* ---------- 作品概览(原流量分析, 含分析详情弹窗) ---------- */
 function renderWorksOverview(acc){
   const wrap = el(`<div></div>`);
+  
+  // 如果当前平台是小红书，渲染小红书笔记
+  if(curPlatform === "xhs"){
+    const xhsData = acc.flowAnalysis && acc.flowAnalysis.xhs;
+    if(!xhsData){
+      wrap.appendChild(el(`<div class="empty big"><div class="ei">📭</div>暂无小红书作品数据</div>`));
+      return wrap;
+    }
+    const C = "var(--xhs)";
+    
+    // 笔记列表
+    const card = el(`<div class="card"></div>`);
+    card.appendChild(el(`<div class="sub-title">🔍 小红书笔记分析</div>`));
+    card.appendChild(el(`<div style="overflow-x:auto">`));
+    const table = el(`<table class="flow-table"></table>`);
+    const thead = el(`<thead><tr>
+      <th>笔记</th><th>阅读</th><th>平均时长</th>
+      <th>封面点击率</th><th>点赞</th><th>收藏</th><th>评论</th><th>分享</th><th>涨粉</th>
+    </tr></thead>`);
+    table.appendChild(thead);
+    const tbody = el(`<tbody></tbody>`);
+    xhsData.itemList.forEach((it, idx)=>{
+      const rewardHtml = it.reward ? `<span class="ft-reward" style="margin-left:4px">🎁 ${it.reward}</span>` : "";
+      const row = el(`<tr>
+        <td><div class="ft-title">${it.title}${rewardHtml}</div><div style="font-size:10px;color:var(--ink-3);margin-top:2px">${it.date}</div></td>
+        <td class="ft-val" style="color:${C}">${it.plays}</td>
+        <td class="ft-val">${it.avgDur}</td>
+        <td class="ft-val" style="color:var(--candy-green)">${it.ctr}</td>
+        <td class="ft-val">${it.likes}</td>
+        <td class="ft-val">${it.favs||"-"}</td>
+        <td class="ft-val">${it.comments||"-"}</td>
+        <td class="ft-val">${it.shares||"-"}</td>
+        <td class="ft-val">${it.fans||"-"}</td>
+      </tr>`);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    card.querySelector("div[style*='overflow']").appendChild(table);
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  // 抖音作品概览
   if(!acc.flowAnalysis || !acc.flowAnalysis.dy){
     wrap.appendChild(el(`<div class="empty big"><div class="ei">📭</div>暂无作品概览数据</div>`));
     return wrap;
