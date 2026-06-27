@@ -453,12 +453,8 @@ function renderOverview(acc){
   wrap.appendChild(sectionLabel("② 观看来源"));
   wrap.appendChild(sourceBlock(curPlatform, acc.source[curPlatform][curPeriod]));
 
-  // 板块3 观看时段
-  wrap.appendChild(sectionLabel("③ 观看时段"));
-  wrap.appendChild(slotBlock(curPlatform, acc.timeslot[curPlatform][curPeriod]));
-
-  // 板块4 作品排行榜
-  wrap.appendChild(sectionLabel("④ 作品排行榜 · 新增观看最多"));
+  // 板块3 作品排行榜
+  wrap.appendChild(sectionLabel("③ 作品排行榜 · 新增观看最多"));
   wrap.appendChild(rankBlock(curPlatform, acc.ranking[curPlatform][curPeriod]));
 
   return wrap;
@@ -767,6 +763,10 @@ function showDetail(itemId, idx){
         <div class="b-val" style="font-size:13px"><b>${s.pct}%</b>${deltaStr}</div>
       </div>`;
     });
+    // 平台扶持流量
+    if(tf.boostFlow){
+      html += `<div style="font-size:13px;color:var(--ink-2);margin-top:12px;padding:8px 12px;background:var(--candy-green-bg);border-radius:8px">🚀 ${tf.boostFlow}</div>`;
+    }
   }
 
   // 搜索关键词
