@@ -130,6 +130,55 @@ const DASHBOARD_DATA = {
         },
       },
 
+      /* ================= 抖音流量分析(tab) ================= */
+      // 数据来自 item_analysis API (06-09~06-26)
+      flowAnalysis: {
+        dy: {
+          period: "全部作品(06-09~06-26)",
+          summary: {
+            cards: [
+              { label: "投稿量",     value: "6",   unit: "篇" },
+              { label: "条均播放量", value: "26.2", unit: "万" },
+              { label: "播放中位数", value: "3.1",  unit: "万" },
+              { label: "条均播放时长", value: "30.6", unit: "秒" },
+              { label: "条均点赞数", value: "4551", unit: "" },
+              { label: "条均分享量", value: "1824", unit: "" },
+              { label: "条均封面点击率", value: "32.9", unit: "%" },
+              { label: "条均5秒完播率", value: "46.1", unit: "%" },
+              { label: "条均2秒跳出率", value: "30.2", unit: "%" },
+            ],
+          },
+          // 每篇作品的流量分析详细数据
+          items: [
+            { title:"让你家拥有一个S型身材的家居布局",
+              date:"2026-06-11 11:52", plays:"132.4万", avgDur:"35.4秒",
+              clickRate:"53.2%", finishRate5s:"54.5%", bounce2s:"27.7%",
+              like:"21897", share:"9594", comment:"868", reward:"爆款" },
+            { title:"现代家中男尊女卑的实际理解, 很实用!",
+              date:"2026-06-18 12:06", plays:"17.5万", avgDur:"24.9秒",
+              clickRate:"100%", finishRate5s:"44.4%", bounce2s:"33.0%",
+              like:"3828", share:"961", comment:"59" },
+            { title:"不利家中女性的格局, 三招解决！",
+              date:"2026-06-22 12:00", plays:"3.2万", avgDur:"25.2秒",
+              clickRate:"59.9%", finishRate5s:"47.0%", bounce2s:"33.8%",
+              like:"859", share:"212", comment:"53" },
+            { title:"不要迷信了！寺庙的秘密被可视化了",
+              date:"2026-06-09 12:10", plays:"2.9万", avgDur:"33.5秒",
+              clickRate:"100%", finishRate5s:"45.3%", bounce2s:"28.1%",
+              like:"575", share:"126", comment:"24" },
+            { title:"容易提升成绩的位置，打造好的学习环境",
+              date:"2026-06-15 19:13", plays:"7498", avgDur:"42.3秒",
+              clickRate:"100%", finishRate5s:"44.5%", bounce2s:"32.6%",
+              like:"186", share:"48", comment:"10" },
+            { title:"酒店选房避雷指南, 国歌护体，睡稳心安。",
+              date:"2026-06-26 11:57", plays:"2960", avgDur:"22.0秒",
+              clickRate:"100%", finishRate5s:"40.5%", bounce2s:"26.2%",
+              like:"115", share:"32", comment:"7" },
+          ],
+        },
+        xhs: null, // 小红书暂无流量分析功能
+      },
+
       /* ================= 观看来源(条形) ================= */
       source: {
         xhs: {
