@@ -626,10 +626,11 @@ function renderWorksOverview(acc){
     const card = el(`<div class="card"></div>`);
     card.appendChild(el(`<div class="sub-title">🔍 小红书笔记分析</div>`));
     card.appendChild(el(`<div class="card" style="margin-bottom:14px"><div class="sub-title">📊 笔记流量概览</div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="kpi"><div class="k-label">封面点击率</div><div class="k-value">12.8<span class="u">%</span></div></div>
-        <div class="kpi"><div class="k-label">平均观看时长</div><div class="k-value">93<span class="u">秒</span></div></div>
-        <div class="kpi"><div class="k-label">5秒完播率</div><div class="k-value">64.9<span class="u">%</span></div></div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="k-label">封面点击率</div><div class="k-value"><span id="xhsAvgCtr">-</span><span class="u">%</span></div></div>
+        <div class="kpi"><div class="k-label">平均观看时长</div><div class="k-value"><span id="xhsAvgDur">-</span><span class="u">秒</span></div></div>
+        <div class="kpi"><div class="k-label">观看总时长</div><div class="k-value"><span id="xhsTotalTime">-</span><span class="u">小时</span></div></div>
+        <div class="kpi"><div class="k-label">视频完播率</div><div class="k-value"><span id="xhsFullView">-</span><span class="u">%</span></div></div>
       </div>
     </div>`));
     card.appendChild(el(`<div style="overflow-x:auto">`));
@@ -656,6 +657,27 @@ function renderWorksOverview(acc){
     table.appendChild(tbody);
     card.querySelector("div[style*='overflow']").appendChild(table);
     wrap.appendChild(card);
+        // 计算笔记流量概览均值
+    if(xhsData.itemList && xhsData.itemDetails){
+      let totalCtr = 0, totalDur = 0, totalFull = 0, ctrCount = 0, durCount = 0, fullCount = 0;
+      let totalViewTime = 0;
+      xhsData.itemList.forEach(it=>{
+        const d = xhsData.itemDetails[it.title];
+        if(d && d.overview){
+          if(d.overview.coverClickRate){ totalCtr += parseFloat(d.overview.coverClickRate); ctrCount++; }
+          if(d.overview.avgViewSecond){ totalDur += parseFloat(d.overview.avgViewSecond); durCount++; }
+          if(d.overview.fullViewRate){ totalFull += parseFloat(d.overview.fullViewRate); fullCount++; }
+          if(d.overview.avgViewSecond && d.overview.viewCount){
+            totalViewTime += parseFloat(d.overview.avgViewSecond) * parseInt(d.overview.viewCount) / 3600;
+          }
+        }
+      });
+      const setVal = (id, val)=> { const el = document.getElementById(id); if(el) el.textContent = val; };
+      setVal('xhsAvgCtr', ctrCount ? (totalCtr/ctrCount).toFixed(1) : '-');
+      setVal('xhsAvgDur', durCount ? Math.round(totalDur/durCount) : '-');
+      setVal('xhsTotalTime', totalViewTime ? totalViewTime.toFixed(1) : '-');
+      setVal('xhsFullView', fullCount ? (totalFull/fullCount).toFixed(1) : '-');
+    }
     return wrap;
   }
 
@@ -983,24 +1005,24 @@ function showXhsDetail(title){
   // 作品总览
   html += `<div class="card"><div class="sub-title">📋 作品总览</div>
     <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
-      <div class="kpi"><div class="k-label">曝光数</div><div class="k-value">${ov.implCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">阅读量</div><div class="k-value">${ov.viewCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">点赞</div><div class="k-value">${ov.likeCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">评论</div><div class="k-value">${ov.commentCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">收藏</div><div class="k-value">${ov.collectCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">分享</div><div class="k-value">${ov.shareCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">涨粉</div><div class="k-value">${ov.riseFansCount||"?"}</div></div>
-      <div class="kpi"><div class="k-label">平均观看时长</div><div class="k-value">${ov.avgViewSecond||"?"}<span class="u">秒</span></div></div>
+      <div class="kpi"><div class="k-label">曝光数</div><div class="k-value">${ov.impl_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">阅读量</div><div class="k-value">${ov.view_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">点赞</div><div class="k-value">${ov.like_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">评论</div><div class="k-value">${ov.comment_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">收藏</div><div class="k-value">${ov.collect_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">分享</div><div class="k-value">${ov.share_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">涨粉</div><div class="k-value">${ov.rise_fans_count||"?"}</div></div>
+      <div class="kpi"><div class="k-label">平均观看时长</div><div class="k-value">${ov.view_time_avg||"?"}<span class="u">秒</span></div></div>
     </div></div>`;
 
   // 流量分析
   html += `<div class="card"><div class="sub-title">🔎 流量分析</div>`;
-  if(ov.coverClickRate || ov.finish5sRate || ov.fullViewRate || ov.exitView2sRate){
+  if(ov.cover_click_rate || ov.finish5s_rate || ov.full_view_rate || ov.exit_view2s_rate){
     html += `<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
-      <div class="kpi"><div class="k-label">封面点击率</div><div class="k-value">${ov.coverClickRate}<span class="u">%</span></div></div>
-      <div class="kpi"><div class="k-label">5秒完播率</div><div class="k-value">${ov.finish5sRate}<span class="u">%</span></div></div>
-      <div class="kpi"><div class="k-label">完整完播率</div><div class="k-value">${ov.fullViewRate}<span class="u">%</span></div></div>
-      <div class="kpi"><div class="k-label">2秒跳出率</div><div class="k-value">${ov.exitView2sRate}<span class="u">%</span></div></div>
+      <div class="kpi"><div class="k-label">封面点击率</div><div class="k-value">${ov.cover_click_rate}<span class="u">%</span></div></div>
+      <div class="kpi"><div class="k-label">5秒完播率</div><div class="k-value">${ov.finish5s_rate}<span class="u">%</span></div></div>
+      <div class="kpi"><div class="k-label">完整完播率</div><div class="k-value">${ov.full_view_rate}<span class="u">%</span></div></div>
+      <div class="kpi"><div class="k-label">2秒跳出率</div><div class="k-value">${ov.exit_view2s_rate}<span class="u">%</span></div></div>
     </div>`;
   }
   // 观看来源
