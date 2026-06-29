@@ -1078,6 +1078,206 @@ function showXhsDetail(title){
 
     content.innerHTML = html;
   modal.style.display = "block";
+
+  // 渲染趋势图
+  const trend = detail.trend;
+  if(trend && trend.daily && trend.daily.view && trend.daily.view.length){
+    renderXhsTrendCharts(trend);
+  }
+}
+
+/* ---- 渲染三个趋势图 ---- */
+function renderXhsTrendCharts(trend){
+  const modal = document.getElementById("detailContent");
+  const hourlyView = trend.hourly?.view || [];
+  const dailyView = trend.daily?.view || [];
+  const dailyExit = trend.daily?.exit_view2s || [];
+  const hourlyRise = trend.hourly?.rise_fans || [];
+  const dailyRise = trend.daily?.rise_fans || [];
+
+  // --- ① 观看趋势 ---
+  const viewCard = document.createElement("div");
+  viewCard.className = "card";
+  const viewTitle = document.createElement("div");
+  viewTitle.className = "sub-title";
+  viewTitle.innerHTML = '&#x1F441;&#xFE0F; 观看趋势';
+  const viewTog = document.createElement("span");
+  viewTog.style.cssText = "display:inline-flex;margin-left:10px;vertical-align:middle";
+  viewTog.innerHTML = '<button class="tab-hour-view active" style="padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--xhs);background:var(--xhs);color:#fff;border-radius:4px 0 0 4px">按小时</button><button class="tab-day-view" style="padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0">按天</button>';
+  viewTitle.appendChild(viewTog);
+  viewCard.appendChild(viewTitle);
+  const viewChartWrap = document.createElement("div");
+  viewChartWrap.className = "chart-wrap";
+  const viewCanvas = document.createElement("canvas");
+  viewCanvas.id = "chartViewTrend";
+  viewChartWrap.appendChild(viewCanvas);
+  viewCard.appendChild(viewChartWrap);
+  const viewSummary = document.createElement("div");
+  viewSummary.id = "viewSummary";
+  viewSummary.style.cssText = "font-size:12px;color:var(--ink-3);margin-top:6px";
+  viewCard.appendChild(viewSummary);
+  modal.appendChild(viewCard);
+
+  // 画观看趋势图
+  let viewChart = null;
+  function drawViewChart(isHour){
+    if(viewChart) { viewChart.destroy(); viewChart = null; }
+    const data = isHour ? hourlyView : dailyView;
+    if(!data.length) return;
+    const labels = data.map(d=>d.t);
+    const values = data.map(d=>d.v);
+    const ctx = document.getElementById("chartViewTrend");
+    if(!ctx) return;
+    viewChart = new Chart(ctx, {
+      type:"line",
+      data:{ labels, datasets:[{
+        label:isHour?"每小时观看":"每天观看",
+        data:values,
+        borderColor:"#4C8DFF",
+        backgroundColor:"rgba(76,141,255,.12)",
+        fill:true,
+        tension:.3,
+        pointRadius:3,
+        pointBackgroundColor:"#4C8DFF",
+        borderWidth:2
+      }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero:true, ticks:{ callback:function(v){ return v>=10000?(v/10000).toFixed(1)+'\\u4e07':v; } } },
+                 x:{ ticks:{ font:{size:9}, maxTicksLimit:isHour?12:15 } } }
+      }
+    });
+    detailCharts.push(viewChart);
+    // 总结
+    const maxItem = data.reduce(function(a,b){ return a.v>b.v?a:b; });
+    document.getElementById("viewSummary").textContent =
+      "\\uD83C\\uDFC6 观看峰值：" + maxItem.t + "（" + (maxItem.v>=10000?(maxItem.v/10000).toFixed(1)+"\\u4e07":maxItem.v) + "次观看）";
+  }
+  drawViewChart(true);
+  setTimeout(function(){
+    var hourBtn = modal.querySelector(".tab-hour-view");
+    var dayBtn = modal.querySelector(".tab-day-view");
+    if(hourBtn) hourBtn.addEventListener("click",function(){
+      hourBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--xhs);background:var(--xhs);color:#fff;border-radius:4px 0 0 4px";
+      dayBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0";
+      drawViewChart(true);
+    });
+    if(dayBtn) dayBtn.addEventListener("click",function(){
+      dayBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--xhs);background:var(--xhs);color:#fff;border-radius:4px 0 0 4px";
+      hourBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0";
+      drawViewChart(false);
+    });
+  },0);
+
+  // --- ② 离开趋势 ---
+  if(dailyExit.length){
+    const exitCard = document.createElement("div");
+    exitCard.className = "card";
+    exitCard.innerHTML = "<div class=\"sub-title\">&#x1F6AA; 离开趋势(2秒跳出率)</div>";
+    const exitWrap = document.createElement("div");
+    exitWrap.className = "chart-wrap";
+    const exitCanvas = document.createElement("canvas");
+    exitCanvas.id = "chartExitTrend";
+    exitWrap.appendChild(exitCanvas);
+    exitCard.appendChild(exitWrap);
+    modal.appendChild(exitCard);
+    const exitCtx = document.getElementById("chartExitTrend");
+    if(exitCtx){
+      var exitChart = new Chart(exitCtx, {
+        type:"line",
+        data:{ labels:dailyExit.map(function(d){ return d.t; }), datasets:[{
+          label:"2秒跳出率(%)",
+          data:dailyExit.map(function(d){ return d.vd; }),
+          borderColor:"#FF6B6B",
+          backgroundColor:"rgba(255,107,107,.1)",
+          fill:true,
+          tension:.3,
+          pointRadius:3,
+          pointBackgroundColor:"#FF6B6B",
+          borderWidth:2
+        }]},
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ display:false } },
+          scales:{ y:{ beginAtZero:true, max:100, ticks:{ callback:function(v){ return v+"%"; } } },
+                   x:{ ticks:{ font:{size:9}, maxTicksLimit:15 } } }
+        }
+      });
+      detailCharts.push(exitChart);
+    }
+  }
+
+  // --- ③ 涨粉趋势 ---
+  const riseCard = document.createElement("div");
+  riseCard.className = "card";
+  const riseTitle = document.createElement("div");
+  riseTitle.className = "sub-title";
+  riseTitle.innerHTML = '&#x1F4C8; 涨粉趋势';
+  const riseTog = document.createElement("span");
+  riseTog.style.cssText = "display:inline-flex;margin-left:10px;vertical-align:middle";
+  riseTog.innerHTML = '<button class="tab-hour-rise active" style="padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--down);background:var(--down);color:#fff;border-radius:4px 0 0 4px">按小时</button><button class="tab-day-rise" style="padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0">按天</button>';
+  riseTitle.appendChild(riseTog);
+  riseCard.appendChild(riseTitle);
+  const riseChartWrap = document.createElement("div");
+  riseChartWrap.className = "chart-wrap";
+  const riseCanvas = document.createElement("canvas");
+  riseCanvas.id = "chartRiseTrend";
+  riseChartWrap.appendChild(riseCanvas);
+  riseCard.appendChild(riseChartWrap);
+  const riseSummary = document.createElement("div");
+  riseSummary.id = "riseSummary";
+  riseSummary.style.cssText = "font-size:12px;color:var(--ink-3);margin-top:6px";
+  riseCard.appendChild(riseSummary);
+  modal.appendChild(riseCard);
+
+  // 画涨粉趋势图
+  let riseChart = null;
+  function drawRiseChart(isHour){
+    if(riseChart) { riseChart.destroy(); riseChart = null; }
+    const data = isHour ? hourlyRise : dailyRise;
+    if(!data.length) return;
+    const labels = data.map(function(d){ return d.t; });
+    const values = data.map(function(d){ return d.v; });
+    const ctx = document.getElementById("chartRiseTrend");
+    if(!ctx) return;
+    riseChart = new Chart(ctx, {
+      type:"line",
+      data:{ labels:labels, datasets:[{
+        label:isHour?"每小时涨粉":"每天涨粉",
+        data:values,
+        borderColor:"#22C9A0",
+        backgroundColor:"rgba(34,201,160,.12)",
+        fill:true,
+        tension:.3,
+        pointRadius:3,
+        pointBackgroundColor:"#22C9A0",
+        borderWidth:2
+      }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero:true, ticks:{ callback:function(v){ return v>=10000?(v/10000).toFixed(1)+"\\u4e07":v; } } },
+                 x:{ ticks:{ font:{size:9}, maxTicksLimit:isHour?12:15 } } }
+      }
+    });
+    detailCharts.push(riseChart);
+    const maxItem = data.reduce(function(a,b){ return a.v>b.v?a:b; });
+    document.getElementById("riseSummary").textContent =
+      "\\uD83C\\uDFC6 涨粉峰值：" + maxItem.t + "（" + (maxItem.v>=10000?(maxItem.v/10000).toFixed(1)+"\\u4e07":maxItem.v) + "个新粉丝）";
+  }
+  drawRiseChart(true);
+  setTimeout(function(){
+    var hourBtn = modal.querySelector(".tab-hour-rise");
+    var dayBtn = modal.querySelector(".tab-day-rise");
+    if(hourBtn) hourBtn.addEventListener("click",function(){
+      hourBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--down);background:var(--down);color:#fff;border-radius:4px 0 0 4px";
+      dayBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0";
+      drawRiseChart(true);
+    });
+    if(dayBtn) dayBtn.addEventListener("click",function(){
+      dayBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--down);background:var(--down);color:#fff;border-radius:4px 0 0 4px";
+      hourBtn.style.cssText = "padding:2px 10px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:0 4px 4px 0";
+      drawRiseChart(false);
+    });
+  },0);
 }
 
 /* ---------- 观众画像渲染(通用) ---------- */
