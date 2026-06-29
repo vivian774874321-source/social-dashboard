@@ -98,7 +98,7 @@
   .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px}
 
   /* 指标卡 grid */
-  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   .kpi{border-radius:12px;padding:14px 16px}
   .kpi:nth-child(6n+1){background:var(--candy-blue-bg)}
   .kpi:nth-child(6n+2){background:var(--candy-green-bg)}
@@ -335,6 +335,14 @@ function renderContent(){
 
   // 诊断雷达
   c.appendChild(renderDiagnosis(acc.diagnosis));
+
+  // 弹窗容器 (供小红书和抖音共用)
+  c.appendChild(el(`<div id="detailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:10000;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeDetail()">
+    <div style="background:#fff;max-width:1100px;margin:0 auto;border-radius:16px;padding:24px 28px;position:relative">
+      <button onclick="closeDetail()" style="position:absolute;top:14px;right:16px;border:0;background:var(--bg);font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>`));
 
   // tab 栏
   const tabs = [
@@ -664,15 +672,20 @@ function renderWorksOverview(acc){
       xhsData.itemList.forEach(it=>{
         const d = xhsData.itemDetails[it.title];
         if(d && d.overview){
-          if(d.overview.coverClickRate){ totalCtr += parseFloat(d.overview.coverClickRate); ctrCount++; }
-          if(d.overview.avgViewSecond){ totalDur += parseFloat(d.overview.avgViewSecond); durCount++; }
-          if(d.overview.fullViewRate){ totalFull += parseFloat(d.overview.fullViewRate); fullCount++; }
-          if(d.overview.avgViewSecond && d.overview.viewCount){
-            totalViewTime += parseFloat(d.overview.avgViewSecond) * parseInt(d.overview.viewCount) / 3600;
+          if(d.overview.cover_click_rate){ totalCtr += parseFloat(d.overview.cover_click_rate); ctrCount++; }
+          if(d.overview.view_time_avg){ totalDur += parseFloat(d.overview.view_time_avg); durCount++; }
+          if(d.overview.full_view_rate){ totalFull += parseFloat(d.overview.full_view_rate); fullCount++; }
+          if(d.overview.view_time_avg && d.overview.view_count){
+            totalViewTime += parseFloat(d.overview.view_time_avg) * parseInt(d.overview.view_count) / 3600;
           }
         }
       });
-      const setVal = (id, val)=> { const el = document.getElementById(id); if(el) el.textContent = val; };
+      const setVal = (id, val)=> {
+        // 元素可能在 wrap 内还未挂入 document，优先从 wrap 查找
+        let el = document.getElementById(id);
+        if(!el) el = wrap.querySelector('#' + id);
+        if(el) el.textContent = val;
+      };
       setVal('xhsAvgCtr', ctrCount ? (totalCtr/ctrCount).toFixed(1) : '-');
       setVal('xhsAvgDur', durCount ? Math.round(totalDur/durCount) : '-');
       setVal('xhsTotalTime', totalViewTime ? totalViewTime.toFixed(1) : '-');
@@ -739,15 +752,6 @@ function renderWorksOverview(acc){
     <b>2秒跳出率：</b>观众在前2秒就划走，越低越好。
   </div></div>`);
   wrap.appendChild(card3);
-
-  // ④ 分析详情弹窗容器
-  const modal = el(`<div id="detailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:10000;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeDetail()">
-    <div style="background:#fff;max-width:1100px;margin:0 auto;border-radius:16px;padding:24px 28px;position:relative">
-      <button onclick="closeDetail()" style="position:absolute;top:14px;right:16px;border:0;background:var(--bg);font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-      <div id="detailContent"></div>
-    </div>
-  </div>`);
-  wrap.appendChild(modal);
 
   return wrap;
 }
